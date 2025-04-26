@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, session, request
 from app.db import connect_db_api
 from functools import wraps
-
+from flasgger import swag_from
 admin_bp = Blueprint('admin_bp', __name__)
 
 
@@ -24,6 +24,27 @@ def main_admin_required(f):
 
 @admin_bp.route("/stats", methods=["GET"])
 @admin_required
+@swag_from({
+    'tags': ['Admin'],
+    'description': 'Get the site statistics, including total movies and TV series.',
+    'responses': {
+        200: {
+            'description': 'Site statistics retrieved successfully',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'total_movies': {'type': 'integer', 'description': 'Total number of movies in the database'},
+                            'total_series': {'type': 'integer', 'description': 'Total number of TV series in the database'}
+                        }
+                    }
+                }
+            }
+        },
+        500: {'description': 'Internal server error', 'content': {'application/json': {}}}
+    }
+})
 def site_stats():
     conn = connect_db_api()
     cursor = conn.cursor()
@@ -44,6 +65,31 @@ def site_stats():
 
 @admin_bp.route("/list", methods=["GET"])
 @main_admin_required
+@swag_from({
+    'tags': ['Admin'],
+    'description': 'Get a list of all admins with their usernames and roles.',
+    'responses': {
+        200: {
+            'description': 'Admin list retrieved successfully',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'id': {'type': 'integer', 'description': 'Admin ID'},
+                                'username': {'type': 'string', 'description': 'Admin username'},
+                                'role': {'type': 'string', 'description': 'Admin role'}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        500: {'description': 'Internal server error', 'content': {'application/json': {}}}
+    }
+})
 def admin_list():
     conn = connect_db_api()
     cursor = conn.cursor()
@@ -57,6 +103,31 @@ def admin_list():
 
 @admin_bp.route("/delete", methods=["DELETE"])
 @main_admin_required
+@swag_from({
+    'tags': ['Admin'],
+    'description': 'Delete an admin account.',
+    'requestBody': {
+        'required': True,
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'admin_id': {'type': 'integer', 'description': 'ID of the admin to be deleted'}
+                    },
+                    'required': ['admin_id']
+                }
+            }
+        }
+    },
+    'responses': {
+        200: {'description': 'Admin deleted successfully', 'content': {'application/json': {}}},
+        400: {'description': 'Missing admin_id in request', 'content': {'application/json': {}}},
+        403: {'description': 'Cannot delete main admin', 'content': {'application/json': {}}},
+        404: {'description': 'Admin not found', 'content': {'application/json': {}}},
+        500: {'description': 'Internal server error', 'content': {'application/json': {}}}
+    }
+})
 def delete_admin():
     admin_id = request.json.get('admin_id')
 

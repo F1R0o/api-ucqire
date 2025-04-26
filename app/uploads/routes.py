@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from app.db import connect_db_api, connect_db_api2
 from functools import wraps
-
+from flasgger import swag_from
 upload_bp = Blueprint('upload_bp', __name__)
 
 
@@ -15,6 +15,32 @@ def admin_upload_permission_required(f):
 
 
 @upload_bp.route("/movie", methods=["POST"])
+@swag_from({
+    'tags': ['Upload'],
+    'description': 'Upload a new movie to the platform.',
+    'parameters': [
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'properties': {
+                    'title_eng': {'type': 'string'},
+                    'imdb': {'type': 'string'},
+                    'year': {'type': 'integer'},
+                    'genres': {'type': 'string'},
+                    'poster': {'type': 'string'},
+                    'description': {'type': 'string'}
+                },
+                'required': ['title_eng', 'imdb', 'year', 'genres', 'poster']
+            }
+        }
+    ],
+    'responses': {
+        201: {'description': 'Movie uploaded successfully'},
+        400: {'description': 'Missing required fields'}
+    }
+})
 @admin_upload_permission_required
 def upload_movie():
     data = request.json
@@ -42,6 +68,34 @@ def upload_movie():
 
 @upload_bp.route("/series", methods=["POST"])
 @admin_upload_permission_required
+@swag_from({
+    'tags': ['Upload'],
+    'description': 'Upload a new TV series.',
+    'requestBody': {
+        'required': True,
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'title_eng': {'type': 'string', 'description': 'English title of the TV series'},
+                        'imdb': {'type': 'string', 'description': 'IMDb rating of the series'},
+                        'year': {'type': 'integer', 'description': 'Year of release'},
+                        'genres': {'type': 'string', 'description': 'Genres of the series'},
+                        'poster': {'type': 'string', 'description': 'Link to the poster image'},
+                        'description': {'type': 'string', 'description': 'Description of the series'}
+                    },
+                    'required': ['title_eng', 'imdb', 'year', 'genres', 'poster']
+                }
+            }
+        }
+    },
+    'responses': {
+        201: {'description': 'Series uploaded successfully', 'content': {'application/json': {}}},
+        400: {'description': 'Missing fields', 'content': {'application/json': {}}},
+        500: {'description': 'Internal server error', 'content': {'application/json': {}}}
+    }
+})
 def upload_series():
     data = request.json
     title_eng = data.get('title_eng')
@@ -68,6 +122,33 @@ def upload_series():
 
 @upload_bp.route("/episode", methods=["POST"])
 @admin_upload_permission_required
+@swag_from({
+    'tags': ['Upload'],
+    'description': 'Upload a new episode for a TV series.',
+    'requestBody': {
+        'required': True,
+        'content': {
+            'application/json': {
+                'schema': {
+                    'type': 'object',
+                    'properties': {
+                        'series_id': {'type': 'integer', 'description': 'ID of the series'},
+                        'title_eng': {'type': 'string', 'description': 'Title of the episode'},
+                        'season': {'type': 'integer', 'description': 'Season number'},
+                        'episode_number': {'type': 'integer', 'description': 'Episode number'},
+                        'video_link': {'type': 'string', 'description': 'Link to the episode video'}
+                    },
+                    'required': ['series_id', 'title_eng', 'season', 'episode_number', 'video_link']
+                }
+            }
+        }
+    },
+    'responses': {
+        201: {'description': 'Episode uploaded successfully', 'content': {'application/json': {}}},
+        400: {'description': 'Missing fields', 'content': {'application/json': {}}},
+        500: {'description': 'Internal server error', 'content': {'application/json': {}}}
+    }
+})
 def upload_episode():
     data = request.json
     series_id = data.get('series_id')
