@@ -5,3 +5,5 @@ eventlet
 Werkzeug
 python-dotenv
 flasgger
+Flask-Caching
+redis

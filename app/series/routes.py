@@ -1,10 +1,13 @@
 from flask import Blueprint, request, jsonify
 from app.db import connect_db_api2
 from flasgger import swag_from
+from app.extensions import cache
+
 series_bp = Blueprint('series_bp', __name__)
 
 
 @series_bp.route("/all", methods=["GET"])
+@cache.cached(timeout=60)
 @swag_from({
     'tags': ['Series'],
     'description': 'Get a paginated list of all TV series.',
@@ -59,7 +62,7 @@ def series_by_id():
 
 
 @series_bp.route("/episodes", methods=["GET"])
-@series_bp.route("/episodes", methods=["GET"])
+@cache.cached(timeout=60)
 @swag_from({
     'tags': ['Series'],
     'description': 'Get episodes for a series',

@@ -1,3 +1,4 @@
+
 # 🎬 UCQIRE API
 
 A clean, professional **Flask REST API** for a movie and TV series platform.
@@ -30,6 +31,7 @@ A clean, professional **Flask REST API** for a movie and TV series platform.
 - Flask-SocketIO
 - SQLite3 (raw)
 - dotenv (for environment variables)
+- Redis (for caching)
 
 ---
 
@@ -44,7 +46,7 @@ A clean, professional **Flask REST API** for a movie and TV series platform.
 2. **Create a virtual environment** (optional but recommended):
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows use: venv\Scripts\activate
+    source venv/bin/activate  # On Windows use: venv\\Scripts\\activate
     ```
 
 3. **Install the requirements**:
@@ -67,3 +69,6 @@ Create a `.env` file in the root directory:
 
 ```env
 SECRET_KEY=your_secret_key
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
